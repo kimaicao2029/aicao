@@ -95,9 +95,9 @@ def calculate_green_benefits(moxa_ratio, years):
     cost_saving = fresh_grass * 0.01  # 单位：元
     return fresh_grass, carbon_reduction, cost_saving
 
-# ---------------------- 艾草智能体核心函数 ----------------------
-def call_ai_expert(messages, api_key, model="doubao-seed-1.6", temperature=0.7):
-    """调用豆包API，实现艾草专家问答"""
+# ---------------------- 艾草智能体核心函数（火山方舟V3最终版） ----------------------
+def call_ai_expert(messages, api_key, endpoint_id, temperature=0.7):
+    """调用火山方舟DeepSeek-V4-Flash API，实现艾草专家问答"""
     url = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -142,10 +142,11 @@ def call_ai_expert(messages, api_key, model="doubao-seed-1.6", temperature=0.7):
     full_messages = [{"role": "system", "content": system_prompt}] + messages
     
     payload = {
-        "model": model,
+        "model": endpoint_id,
         "messages": full_messages,
         "temperature": temperature,
-        "stream": True
+        "stream": True,
+        "stream_options": {"include_usage": False}
     }
     
     try:
@@ -155,13 +156,23 @@ def call_ai_expert(messages, api_key, model="doubao-seed-1.6", temperature=0.7):
     except Exception as e:
         return str(e)
 
-# ---------------------- 侧边栏导航 ----------------------
+# ---------------------- 侧边栏导航（修复跳转问题） ----------------------
 with st.sidebar:
     st.header("功能导航")
+    
+    # 初始化页面状态（修复跳转问题）
+    if "page" not in st.session_state:
+        st.session_state.page = "🌱 艾草的一生"
+    
+    page_options = ["🌱 艾草的一生", "🪵 艾条制作工坊", "🎐 香囊制作工坊", "📚 艾草趣味科普馆", "🎮 中药功效连连看", "🤖 艾草智慧问答"]
     page = st.radio(
         "",
-        ["🌱 艾草的一生", "🪵 艾条制作工坊", "🎐 香囊制作工坊", "📚 艾草趣味科普馆", "🎮 中药功效连连看", "🤖 艾草智慧问答"]
+        page_options,
+        index=page_options.index(st.session_state.page)
     )
+    
+    # 同步页面状态
+    st.session_state.page = page
     st.divider()
     
     # ---------------------- 智能体控制面板 ----------------------
@@ -170,19 +181,18 @@ with st.sidebar:
         
         # API密钥输入
         api_key = st.text_input(
-            "豆包API密钥",
+            "火山方舟API密钥",
             type="password",
-            help="输入你从火山引擎获取的sk-开头的密钥",
-            placeholder="sk-xxxxxxxxxxxxxxxxxxxx"
+            help="输入你从火山引擎获取的ark-开头的密钥",
+            placeholder="ark-xxxxxxxxxxxxxxxxxxxx"
         )
         
-        # 模型选择
-        model = st.selectbox(
-            "选择模型",
-            ["doubao-seed-1.6 (免费推荐)", "doubao-pro-32k (更智能)"],
-            index=0
+        # 接入点ID输入
+        endpoint_id = st.text_input(
+            "模型接入点ID",
+            help="输入你刚刚创建的ep-开头的接入点ID",
+            placeholder="ep-20260526134725-dbn8787k"
         )
-        model_name = model.split(" ")[0]
         
         # 温度调节
         temperature = st.slider(
@@ -206,9 +216,9 @@ with st.sidebar:
         with col2:
             if st.button("📖 使用说明", type="secondary"):
                 st.info("""
-                1. 输入你的豆包API密钥
-                2. 在下方输入框提问
-                3. 智能体只会回答艾草相关问题
+                1. 输入你的火山方舟API密钥
+                2. 输入你的模型接入点ID
+                3. 在下方输入框提问
                 4. 新用户有50万免费tokens
                 """)
         
@@ -330,7 +340,7 @@ if page == "🌱 艾草的一生":
         
         st.divider()
         
-        # 一键问AI按钮
+        # 一键问AI按钮（修复跳转）
         if st.button("🤖 问艾小博更多关于这个阶段的问题", type="primary", use_container_width=True):
             # 自动跳转到智能问答页面，并预设问题
             st.session_state.chat_messages = [{"role": "user", "content": f"请详细介绍一下艾草的{current_stage['name']}"}]
@@ -523,7 +533,7 @@ elif page == "🪵 艾条制作工坊":
                     del st.session_state[key]
             st.rerun()
 
-# ---------------------- 页面3：香囊制作工坊 ----------------------
+# ---------------------- 页面3：香囊制作工坊（动态预览版） ----------------------
 elif page == "🎐 香囊制作工坊":
     st.header("🎐 艾草香囊制作虚拟实训")
     st.info("跟着步骤亲手制作你的专属艾草香囊，体验传统手工艺的魅力！")
@@ -535,6 +545,10 @@ elif page == "🎐 香囊制作工坊":
         st.session_state.crush_progress = 0
     if "stem_progress" not in st.session_state:
         st.session_state.stem_progress = 0
+    if "bag_style" not in st.session_state:
+        st.session_state.bag_style = "🏮 传统国风款"
+    if "accessories" not in st.session_state:
+        st.session_state.accessories = []
     
     # 制作总进度条
     st.progress((st.session_state.sachet_step-1)/4)
@@ -664,10 +678,10 @@ elif page == "🎐 香囊制作工坊":
                 st.session_state.sachet_step = 4
                 st.rerun()
     
-    # 步骤4：装饰美化
+    # 步骤4：装饰美化（动态预览版）
     elif st.session_state.sachet_step == 4:
         st.subheader("第四步：装饰你的专属香囊")
-        st.info("选择你喜欢的布袋款式和配饰，打造独一无二的艾草香囊！")
+        st.info("选择你喜欢的布袋款式和配饰，打造独一无二的艾草香囊！点击选项，左边预览会实时更新！")
         
         col1, col2 = st.columns([1, 1.5])
         
@@ -683,18 +697,22 @@ elif page == "🎐 香囊制作工坊":
             
             st.markdown("#### 🎀 选择配饰（可多选）")
             accessories = []
-            if st.checkbox("🧵 彩色流苏"):
+            if st.checkbox("🧵 彩色流苏", value="彩色流苏" in st.session_state.get("accessories", [])):
                 accessories.append("彩色流苏")
-            if st.checkbox("🎀 丝绸蝴蝶结"):
+            if st.checkbox("🎀 丝绸蝴蝶结", value="丝绸蝴蝶结" in st.session_state.get("accessories", [])):
                 accessories.append("丝绸蝴蝶结")
-            if st.checkbox("🔖 木质平安符"):
+            if st.checkbox("🔖 木质平安符", value="木质平安符" in st.session_state.get("accessories", [])):
                 accessories.append("木质平安符")
+            
+            # 保存选择到session_state
+            st.session_state.bag_style = bag_style
+            st.session_state.accessories = accessories
             
             if not accessories:
                 st.info("你可以选择不添加任何配饰，保持简约风格")
         
         with col2:
-            st.markdown("#### 🎨 你的香囊预览")
+            st.markdown("#### 🎨 实时预览")
             st.markdown(f"""
             **款式：** {bag_style}
             **配方：** {st.session_state.formula_name}
@@ -702,26 +720,104 @@ elif page == "🎐 香囊制作工坊":
             **配饰：** {', '.join(accessories) if accessories else '无'}
             """)
             
-            # 预览图占位
-            st.markdown("""
-            <div style="
-                width: 200px;
-                height: 250px;
-                background: linear-gradient(135deg, #f5f5dc 0%, #e8d5b7 100%);
-                border-radius: 10px;
-                margin: 20px auto;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border: 2px solid #8B4513;
-            ">
-                <span style="font-size: 48px;">🌿</span>
-            </div>
-            """, unsafe_allow_html=True)
+            # 动态生成香囊预览（纯CSS实现，点击实时更新）
+            bag_color = "#f5f5dc" if bag_style == "🏮 传统国风款" else "#e8f5e9" if bag_style == "🍃 清新简约款" else "#fff3e0"
+            border_color = "#8B4513" if bag_style == "🏮 传统国风款" else "#2E7D32" if bag_style == "🍃 清新简约款" else "#FF9800"
+            
+            # 基础香囊
+            preview_html = f"""
+            <div style="position: relative; width: 200px; height: 280px; margin: 20px auto;">
+                <div style="
+                    width: 200px;
+                    height: 250px;
+                    background: linear-gradient(135deg, {bag_color} 0%, {bag_color}dd 100%);
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: 3px solid {border_color};
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                ">
+                    <span style="font-size: 48px;">🌿</span>
+                </div>
+            """
+            
+            # 动态添加流苏
+            if "彩色流苏" in accessories:
+                preview_html += """
+                <div style="
+                    position: absolute;
+                    bottom: -30px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 4px;
+                    height: 30px;
+                    background: linear-gradient(to bottom, #ff6b6b, #4ecdc4, #45b7d1);
+                    border-radius: 2px;
+                "></div>
+                """
+            
+            # 动态添加蝴蝶结
+            if "丝绸蝴蝶结" in accessories:
+                preview_html += """
+                <div style="
+                    position: absolute;
+                    top: -10px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 40px;
+                    height: 20px;
+                    background: #ff6b6b;
+                    border-radius: 10px;
+                ">
+                    <div style="
+                        position: absolute;
+                        left: -15px;
+                        top: 0;
+                        width: 20px;
+                        height: 20px;
+                        background: #ff6b6b;
+                        border-radius: 50% 0 0 50%;
+                    "></div>
+                    <div style="
+                        position: absolute;
+                        right: -15px;
+                        top: 0;
+                        width: 20px;
+                        height: 20px;
+                        background: #ff6b6b;
+                        border-radius: 0 50% 50% 0;
+                    "></div>
+                </div>
+                """
+            
+            # 动态添加平安符
+            if "木质平安符" in accessories:
+                preview_html += """
+                <div style="
+                    position: absolute;
+                    top: 10px;
+                    right: -15px;
+                    width: 30px;
+                    height: 40px;
+                    background: #8B4513;
+                    border-radius: 5px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 12px;
+                    font-weight: bold;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                ">
+                    平安
+                </div>
+                """
+            
+            preview_html += "</div>"
+            st.markdown(preview_html, unsafe_allow_html=True)
         
         if st.button("✅ 完成制作！", type="primary", use_container_width=True):
-            st.session_state.bag_style = bag_style
-            st.session_state.accessories = accessories
             st.session_state.sachet_step = 5
             st.rerun()
     
@@ -734,24 +830,106 @@ elif page == "🎐 香囊制作工坊":
         col1, col2 = st.columns([1, 1.5])
         
         with col1:
-            st.markdown("""
-            <div style="
-                width: 250px;
-                height: 300px;
-                background: linear-gradient(135deg, #f5f5dc 0%, #e8d5b7 100%);
-                border-radius: 15px;
-                margin: 0 auto;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                border: 3px solid #8B4513;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            ">
-                <span style="font-size: 64px; margin-bottom: 10px;">🌿</span>
-                <span style="font-size: 18px; color: #5D4037; font-weight: bold;">艾草香囊</span>
-            </div>
-            """, unsafe_allow_html=True)
+            # 动态生成最终成品（和预览完全一致）
+            bag_style = st.session_state.bag_style
+            accessories = st.session_state.accessories
+            
+            bag_color = "#f5f5dc" if bag_style == "🏮 传统国风款" else "#e8f5e9" if bag_style == "🍃 清新简约款" else "#fff3e0"
+            border_color = "#8B4513" if bag_style == "🏮 传统国风款" else "#2E7D32" if bag_style == "🍃 清新简约款" else "#FF9800"
+            
+            final_html = f"""
+            <div style="position: relative; width: 250px; height: 350px; margin: 0 auto;">
+                <div style="
+                    width: 250px;
+                    height: 300px;
+                    background: linear-gradient(135deg, {bag_color} 0%, {bag_color}dd 100%);
+                    border-radius: 15px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    border: 3px solid {border_color};
+                    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+                ">
+                    <span style="font-size: 64px; margin-bottom: 10px;">🌿</span>
+                    <span style="font-size: 18px; color: {border_color}; font-weight: bold;">艾草香囊</span>
+                </div>
+            """
+            
+            # 动态添加流苏
+            if "彩色流苏" in accessories:
+                final_html += """
+                <div style="
+                    position: absolute;
+                    bottom: -40px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 6px;
+                    height: 40px;
+                    background: linear-gradient(to bottom, #ff6b6b, #4ecdc4, #45b7d1);
+                    border-radius: 3px;
+                "></div>
+                """
+            
+            # 动态添加蝴蝶结
+            if "丝绸蝴蝶结" in accessories:
+                final_html += """
+                <div style="
+                    position: absolute;
+                    top: -12px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 50px;
+                    height: 25px;
+                    background: #ff6b6b;
+                    border-radius: 12px;
+                ">
+                    <div style="
+                        position: absolute;
+                        left: -18px;
+                        top: 0;
+                        width: 25px;
+                        height: 25px;
+                        background: #ff6b6b;
+                        border-radius: 50% 0 0 50%;
+                    "></div>
+                    <div style="
+                        position: absolute;
+                        right: -18px;
+                        top: 0;
+                        width: 25px;
+                        height: 25px;
+                        background: #ff6b6b;
+                        border-radius: 0 50% 50% 0;
+                    "></div>
+                </div>
+                """
+            
+            # 动态添加平安符
+            if "木质平安符" in accessories:
+                final_html += """
+                <div style="
+                    position: absolute;
+                    top: 15px;
+                    right: -18px;
+                    width: 36px;
+                    height: 48px;
+                    background: #8B4513;
+                    border-radius: 6px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 14px;
+                    font-weight: bold;
+                    box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+                ">
+                    平安
+                </div>
+                """
+            
+            final_html += "</div>"
+            st.markdown(final_html, unsafe_allow_html=True)
         
         with col2:
             st.subheader("制作详情")
@@ -885,7 +1063,7 @@ elif page == "📚 艾草趣味科普馆":
     
     st.divider()
     
-    # 一键问AI按钮
+    # 一键问AI按钮（修复跳转）
     if st.button("🤖 还有其他问题？问艾小博吧！", type="primary", use_container_width=True):
         st.session_state.page = "🤖 艾草智慧问答"
         st.rerun()
@@ -1116,9 +1294,12 @@ else:
     user_input = st.chat_input("输入你想问的关于艾草的问题...")
     
     if user_input:
-        # 检查API密钥
-        if not api_key or not api_key.startswith("sk-"):
-            st.error("请先在左侧控制面板输入正确的豆包API密钥！")
+        # 检查API密钥和接入点ID
+        if not api_key or not api_key.startswith("ark-"):
+            st.error("请先在左侧控制面板输入正确的火山方舟API密钥！")
+            st.stop()
+        if not endpoint_id or not endpoint_id.startswith("ep-"):
+            st.error("请先在左侧控制面板输入正确的模型接入点ID！")
             st.stop()
         
         # 添加用户消息
@@ -1127,9 +1308,12 @@ else:
     
     # 自动生成AI回复（当最后一条是用户消息时）
     if st.session_state.chat_messages and st.session_state.chat_messages[-1]["role"] == "user":
-        # 检查API密钥
-        if not api_key or not api_key.startswith("sk-"):
-            st.error("请先在左侧控制面板输入正确的豆包API密钥！")
+        # 检查API密钥和接入点ID
+        if not api_key or not api_key.startswith("ark-"):
+            st.error("请先在左侧控制面板输入正确的火山方舟API密钥！")
+            st.stop()
+        if not endpoint_id or not endpoint_id.startswith("ep-"):
+            st.error("请先在左侧控制面板输入正确的模型接入点ID！")
             st.stop()
         
         # 生成AI回复
@@ -1137,14 +1321,14 @@ else:
             response = call_ai_expert(
                 st.session_state.chat_messages,
                 api_key,
-                model_name,
+                endpoint_id,
                 temperature
             )
             
             if isinstance(response, str):
                 st.error(f"调用失败：{response}")
             else:
-                # 流式输出
+                # 流式输出（DeepSeek优化版）
                 full_response = ""
                 message_placeholder = st.empty()
                 
