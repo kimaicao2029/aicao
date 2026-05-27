@@ -104,8 +104,8 @@ def calculate_green_benefits(moxa_ratio, years):
 
 # ---------------------- 艾草智能体核心函数（内置密钥版） ----------------------
 # 内置用户的密钥，用户不用自己输入了
-DEFAULT_API_KEY = "ark-xxxxxxxxxxxxxxxxxxxx"  # 从用户截图获取的密钥
-DEFAULT_ENDPOINT_ID = "ep-20260526134725-dbn8787k"  # 从用户截图获取的接入点ID
+DEFAULT_API_KEY = "ark-xxxxxxxxxxxxxxxxxxxx"  
+DEFAULT_ENDPOINT_ID = "ep-20260526134725-dbn8787k"  
 DEFAULT_TEMPERATURE = 0.6
 
 def call_ai_expert(messages, temperature=DEFAULT_TEMPERATURE):
