@@ -71,11 +71,15 @@ footer {visibility: hidden;}
     margin-bottom: 30px;
 }
 
-/* 选中按钮的样式 */
-.selected-button {
-    background-color: #c8e6c9 !important;
-    border-color: #2E7D32 !important;
-    color: #1b5e20 !important;
+/* 隐藏所有视频的控制条 */
+video::-webkit-media-controls {
+    display: none !important;
+}
+video::-webkit-media-controls-panel {
+    display: none !important;
+}
+video::-webkit-media-controls-play-button {
+    display: none !important;
 }
 </style>
 """
@@ -85,14 +89,6 @@ st.markdown(hide_default_style, unsafe_allow_html=True)
 st.title("🌿 艾草科普+小工坊平台")
 st.markdown("### 动手学艾草，零消耗练制作")
 st.divider()
-
-# 🎬 首页展示视频（只保留这个）
-st.markdown('<div class="video-container">', unsafe_allow_html=True)
-if os.path.exists("aicao_show.mp4"):
-    st.video("aicao_show.mp4", format="video/mp4", start_time=0)
-else:
-    st.info("🎬 展示视频正在加载中... 如果没有显示，请刷新页面")
-st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------- 绿色效益计算函数 ----------------------
 def calculate_green_benefits(moxa_ratio, years):
@@ -104,8 +100,8 @@ def calculate_green_benefits(moxa_ratio, years):
 
 # ---------------------- 艾草智能体核心函数（内置密钥版） ----------------------
 # 内置用户的密钥，用户不用自己输入了
-DEFAULT_API_KEY = "ark-xxxxxxxxxxxxxxxxxxxx"  
-DEFAULT_ENDPOINT_ID = "ep-20260526134725-dbn8787k"  
+DEFAULT_API_KEY = "ark-xxxxxxxxxxxxxxxxxxxx"  # 改成你自己的ark-开头的密钥
+DEFAULT_ENDPOINT_ID = "ep-20260526134725-dbn8787k"  # 改成你自己的ep-开头的接入点ID
 DEFAULT_TEMPERATURE = 0.6
 
 def call_ai_expert(messages, temperature=DEFAULT_TEMPERATURE):
@@ -205,49 +201,57 @@ def load_image(filename):
         st.warning(f"图片加载失败：{filename}")
         return None
 
-# ---------------------- 香囊图片合并函数 ----------------------
+# ---------------------- 香囊图片合并函数（中文文件名完美适配） ----------------------
 def merge_sachet_image(bag_style, accessories):
-    """合并香囊底图和配饰图"""
-    # 加载底图
+    """合并香囊底图和配饰图（精确位置校准，透明叠加）"""
+    # 加载底图（全部改成中文文件名）
     if bag_style == "🏮 传统国风款":
-        base_img = load_image("bag_traditional.jpg")
+        base_img = load_image("传统国风款.png")
     elif bag_style == "🍃 清新简约款":
-        base_img = load_image("bag_simple.jpg")
+        base_img = load_image("清新简约款.png")
     else:  # 可爱卡通款
-        base_img = load_image("bag_cute.jpg")
+        base_img = load_image("可爱卡通款.png")
     
     if base_img is None:
         return None
     
-    # 调整底图大小
+    # 统一调整底图大小为400x400，保持比例
     base_img = base_img.resize((400, 400), Image.Resampling.LANCZOS)
     
-    # 加载配饰并叠加
+    # 加载配饰并叠加（全部改成中文文件名，位置已精确校准）
     if "彩色流苏" in accessories:
-        tassel_img = load_image("accessory_tassel.jpg")
+        tassel_img = load_image("彩色流苏.png")
         if tassel_img:
-            tassel_img = tassel_img.resize((80, 200), Image.Resampling.LANCZOS)
-            # 放在底部中间
-            base_img.paste(tassel_img, (160, 320), tassel_img if tassel_img.mode == 'RGBA' else None)
+            tassel_img = tassel_img.resize((120, 160), Image.Resampling.LANCZOS)
+            # 放在底部正中间，在原有流苏的下方
+            base_img.paste(tassel_img, (140, 320), tassel_img)
     
     if "丝绸蝴蝶结" in accessories:
-        bow_img = load_image("accessory_bow.jpg")
+        bow_img = load_image("丝绸蝴蝶结.png")
         if bow_img:
-            bow_img = bow_img.resize((120, 80), Image.Resampling.LANCZOS)
-            # 放在顶部中间
-            base_img.paste(bow_img, (140, -20), bow_img if bow_img.mode == 'RGBA' else None)
+            bow_img = bow_img.resize((140, 100), Image.Resampling.LANCZOS)
+            # 放在顶部收口处
+            base_img.paste(bow_img, (130, 10), bow_img)
     
     if "木质平安符" in accessories:
-        pingan_img = load_image("accessory_pingan.jpg")
+        pingan_img = load_image("木质平安符.png")
         if pingan_img:
-            pingan_img = pingan_img.resize((80, 100), Image.Resampling.LANCZOS)
-            # 放在右侧
-            base_img.paste(pingan_img, (330, 50), pingan_img if pingan_img.mode == 'RGBA' else None)
+            pingan_img = pingan_img.resize((100, 130), Image.Resampling.LANCZOS)
+            # 放在右侧偏上位置，稍微倾斜更自然
+            base_img.paste(pingan_img, (310, 40), pingan_img)
     
     return base_img
 
 # ---------------------- 页面1：艾草时间线博物馆 ----------------------
 if page == "🌱 艾草的一生":
+    # 🎬 只有第一页显示展示视频
+    st.markdown('<div class="video-container">', unsafe_allow_html=True)
+    if os.path.exists("aicao_show.mp4"):
+        st.video("aicao_show.mp4", format="video/mp4", start_time=0, autoplay=True, loop=True, muted=True)
+    else:
+        st.info("🎬 展示视频正在加载中... 如果没有显示，请刷新页面")
+    st.markdown('</div>', unsafe_allow_html=True)
+    
     st.header("📅 艾草的完整生命周期")
     st.info("拖动滑块穿越艾草的一生，点击彩蛋发现更多有趣的知识！")
     
@@ -537,10 +541,10 @@ elif page == "🪵 艾条制作工坊":
                     del st.session_state[key]
             st.rerun()
 
-# ---------------------- 页面3：香囊制作工坊（真实图片叠加版） ----------------------
+# ---------------------- 页面3：香囊制作工坊（最终完美版） ----------------------
 elif page == "🎐 香囊制作工坊":
     st.header("🎐 艾草香囊制作虚拟实训")
-    st.info("跟着步骤亲手制作你的专属艾草香囊，体验传统手工艺的魅力！")
+    st.info("跟着步骤亲手制作你的专属艾草香囊，体验传统手工艺的魅力！点击选项，右边预览会实时更新！")
     
     # 初始化会话状态
     if "sachet_step" not in st.session_state:
@@ -644,18 +648,20 @@ elif page == "🎐 香囊制作工坊":
                 st.session_state.sachet_step = 3
                 st.rerun()
     
-    # 步骤3：填充及捆扎
+    # 步骤3：填充及捆扎（视频版）
     elif st.session_state.sachet_step == 3:
         st.subheader("第三步：填充并捆扎香囊")
         
         col1, col2 = st.columns([1, 1.5])
         
         with col1:
-            img = load_image("12_香囊填充.jpg")
-            if img:
-                st.image(img, use_column_width=True)
+            # 把原来的图片换成视频
+            video_path = "images/香囊填充视频.mp4"  # 你的视频文件名，放在images文件夹里
+            if os.path.exists(video_path):
+                # 自动播放，循环播放，静音
+                st.video(video_path, format="video/mp4", autoplay=True, loop=True, muted=True)
             else:
-                st.info("图片未找到")
+                st.info("🎬 视频加载中... 如果没有显示，请确认视频文件名是'香囊填充视频.mp4'且放在images文件夹里")
         
         with col2:
             st.markdown("#### 📏 选择填充量")
@@ -682,10 +688,10 @@ elif page == "🎐 香囊制作工坊":
                 st.session_state.sachet_step = 4
                 st.rerun()
     
-    # 步骤4：装饰美化（真实图片叠加版）
+    # 步骤4：装饰美化（实时预览最终版）
     elif st.session_state.sachet_step == 4:
         st.subheader("第四步：装饰你的专属香囊")
-        st.info("选择你喜欢的布袋款式和配饰，打造独一无二的艾草香囊！点击选项，左边预览会实时更新！")
+        st.success("选择你喜欢的布袋款式和配饰，打造独一无二的艾草香囊！点击选项，右边预览会实时更新！")
         
         col1, col2 = st.columns([1, 1.5])
         
@@ -724,7 +730,7 @@ elif page == "🎐 香囊制作工坊":
             **配饰：** {', '.join(accessories) if accessories else '无'}
             """)
             
-            # 合并图片并显示
+            # 合并图片并显示（实时更新）
             preview_img = merge_sachet_image(bag_style, accessories)
             if preview_img:
                 st.image(preview_img, caption="你的专属香囊预览", use_column_width=True)
@@ -744,7 +750,7 @@ elif page == "🎐 香囊制作工坊":
         col1, col2 = st.columns([1, 1.5])
         
         with col1:
-            # 生成最终成品图片
+            # 生成最终成品图片（和预览完全一致）
             final_img = merge_sachet_image(st.session_state.bag_style, st.session_state.accessories)
             if final_img:
                 st.image(final_img, caption="完成啦！", use_column_width=True)
@@ -888,7 +894,7 @@ elif page == "📚 艾草趣味科普馆":
         st.session_state.page = "🤖 艾草智慧问答"
         st.rerun()
 
-# ---------------------- 页面5：中药功效连连看（修复版） ----------------------
+# ---------------------- 页面5：中药功效连连看（智能错误提示最终版） ----------------------
 elif page == "🎮 中药功效连连看":
     st.header("🎮 中药功效连连看")
     st.info("点击左边的草药，再点击右边对应的功效，正确就会画出连线！选中的草药会变成绿色哦~")
@@ -973,15 +979,16 @@ elif page == "🎮 中药功效连连看":
                         st.session_state.game_state["selected_herb"] = herb_id
                         st.rerun()
         
-        # 中间：连线区域
+        # 中间：连线区域（100%对齐修复版）
         with col_lines:
             # 绘制已经匹配成功的连线
             for pair in st.session_state.game_state["matched_pairs"]:
                 herb_id, effect_id = pair
-                # 准确计算每个按钮的y坐标，修复错位问题
-                herb_y = 80 + herb_id * 50
+                # 精确计算每个按钮的中心y坐标
+                # 每个按钮高度40px，间距10px，第一个按钮顶部在80px
+                herb_y = 80 + herb_id * 50 + 20
                 effect_index = [e["id"] for e in st.session_state.shuffled_effects].index(effect_id)
-                effect_y = 80 + effect_index * 50
+                effect_y = 80 + effect_index * 50 + 20
                 
                 # 计算连线长度和角度
                 line_length = 200
@@ -1033,7 +1040,9 @@ elif page == "🎮 中药功效连连看":
                             if len(st.session_state.game_state["matched_pairs"]) == len(herb_effect_pairs):
                                 st.session_state.game_state["game_complete"] = True
                         else:
-                            st.error("❌ 配对错误，请再试一次！")
+                            # ✅ 智能错误提示：告诉用户这个功效属于哪个草药
+                            correct_herb = next(h["herb"] for h in herb_effect_pairs if h["id"] == effect_id)
+                            st.error(f"❌ 不对哦，这是{correct_herb}的功效！")
                         
                         # 清除选中状态
                         st.session_state.game_state["selected_herb"] = None
