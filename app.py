@@ -13,7 +13,13 @@ st.set_page_config(
     layout="wide"
 )
 
-# 隐藏Streamlit默认元素，美化界面
+# ---------------------- 火山方舟API配置（就在这里！一眼就能看到） ----------------------
+# 把下面两个值改成你自己的真实值
+DEFAULT_API_KEY = "ai-xiaobo2026.5.26"  # 你的ark-开头的API密钥
+DEFAULT_ENDPOINT_ID = "ep-20260526134725-dbn87"  # 你的ep-开头的接入点ID
+DEFAULT_TEMPERATURE = 0.6
+
+# ---------------------- 全局样式 ----------------------
 hide_default_style = """
 <style>
 #MainMenu {visibility: hidden;}
@@ -81,6 +87,9 @@ video::-webkit-media-controls-panel {
 video::-webkit-media-controls-play-button {
     display: none !important;
 }
+video::-webkit-media-controls-enclosure {
+    display: none !important;
+}
 </style>
 """
 st.markdown(hide_default_style, unsafe_allow_html=True)
@@ -98,21 +107,16 @@ def calculate_green_benefits(moxa_ratio, years):
     cost_saving = fresh_grass * 0.01  # 单位：元
     return fresh_grass, carbon_reduction, cost_saving
 
-# ---------------------- 艾草智能体核心函数（内置密钥版） ----------------------
-# 内置用户的密钥，用户不用自己输入了
-DEFAULT_API_KEY = "ark-xxxxxxxxxxxxxxxxxxxx"  # 改成你自己的ark-开头的密钥
-DEFAULT_ENDPOINT_ID = "ep-20260526134725-dbn8787k"  # 改成你自己的ep-开头的接入点ID
-DEFAULT_TEMPERATURE = 0.6
-
+# ---------------------- 艾草智能体核心函数 ----------------------
 def call_ai_expert(messages, temperature=DEFAULT_TEMPERATURE):
-    """调用火山方舟DeepSeek-V4-Flash API，实现艾草专家问答（内置密钥）"""
+    """调用火山方舟DeepSeek-V4-Flash API，实现艾草专家问答"""
     url = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
     headers = {
         "Authorization": f"Bearer {DEFAULT_API_KEY}",
         "Content-Type": "application/json"
     }
     
-    # 艾草专家系统提示词（专业优化版）
+    # 艾草专家系统提示词
     system_prompt = """
     你是"艾小博"，一位深耕艾草领域8年的科普专家，同时也是传统中医药文化的年轻传播者。
     你的语气亲切、耐心、有活力，像一个懂艾草的好朋友，适合给中小学生和普通大众做科普。
@@ -185,7 +189,7 @@ with st.sidebar:
     
     st.markdown("人工智能创意作品")
 
-# 终极图片加载函数
+# ---------------------- 终极图片加载函数 ----------------------
 def load_image(filename):
     try:
         # 先尝试相对路径
@@ -204,7 +208,7 @@ def load_image(filename):
 # ---------------------- 香囊图片合并函数（中文文件名完美适配） ----------------------
 def merge_sachet_image(bag_style, accessories):
     """合并香囊底图和配饰图（精确位置校准，透明叠加）"""
-    # 加载底图（全部改成中文文件名）
+    # 加载底图（全部使用中文文件名）
     if bag_style == "🏮 传统国风款":
         base_img = load_image("传统国风款.png")
     elif bag_style == "🍃 清新简约款":
@@ -218,12 +222,12 @@ def merge_sachet_image(bag_style, accessories):
     # 统一调整底图大小为400x400，保持比例
     base_img = base_img.resize((400, 400), Image.Resampling.LANCZOS)
     
-    # 加载配饰并叠加（全部改成中文文件名，位置已精确校准）
+    # 加载配饰并叠加（位置和大小已根据你的图片精确校准）
     if "彩色流苏" in accessories:
         tassel_img = load_image("彩色流苏.png")
         if tassel_img:
             tassel_img = tassel_img.resize((120, 160), Image.Resampling.LANCZOS)
-            # 放在底部正中间，在原有流苏的下方
+            # 放在底部正中间
             base_img.paste(tassel_img, (140, 320), tassel_img)
     
     if "丝绸蝴蝶结" in accessories:
@@ -237,14 +241,14 @@ def merge_sachet_image(bag_style, accessories):
         pingan_img = load_image("木质平安符.png")
         if pingan_img:
             pingan_img = pingan_img.resize((100, 130), Image.Resampling.LANCZOS)
-            # 放在右侧偏上位置，稍微倾斜更自然
+            # 放在右侧偏上位置
             base_img.paste(pingan_img, (310, 40), pingan_img)
     
     return base_img
 
-# ---------------------- 页面1：艾草时间线博物馆 ----------------------
+# ---------------------- 页面1：艾草的一生（只有这里有展示视频） ----------------------
 if page == "🌱 艾草的一生":
-    # 🎬 只有第一页显示展示视频
+    # 🎬 首页展示视频（只保留这个）
     st.markdown('<div class="video-container">', unsafe_allow_html=True)
     if os.path.exists("aicao_show.mp4"):
         st.video("aicao_show.mp4", format="video/mp4", start_time=0, autoplay=True, loop=True, muted=True)
@@ -360,7 +364,7 @@ elif page == "🪵 艾条制作工坊":
     st.header("🪵 标准艾条制作虚拟实训")
     st.success("提示：跟着步骤完成制作，最后查看你的绿色环保贡献！")
     
-    # 初始化会话状态（增加边界检查）
+    # 初始化会话状态
     if "step" not in st.session_state:
         st.session_state.step = 1
     if "pound_progress" not in st.session_state:
@@ -369,14 +373,14 @@ elif page == "🪵 艾条制作工坊":
         # 强制限制进度值在0-100之间
         st.session_state.pound_progress = max(0, min(st.session_state.pound_progress, 100))
     
-    # 制作进度条（兼容所有版本）
+    # 制作进度条
     st.progress((st.session_state.step-1)/4)
     st.caption(f"制作进度：{int((st.session_state.step-1)/4*100)}%")
     
     # 步骤1：选料
     if st.session_state.step == 1:
         st.subheader("第一步：选择原料")
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([1, 1.5])
         
         with col1:
             img = load_image("05_艾绒炮制.jpg")
@@ -414,7 +418,7 @@ elif page == "🪵 艾条制作工坊":
     # 步骤2：捶打
     elif st.session_state.step == 2:
         st.subheader("第二步：捶打艾绒")
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([1, 1.5])
         
         with col1:
             img = load_image("08_艾绒捶打.jpg")
@@ -429,12 +433,11 @@ elif page == "🪵 艾条制作工坊":
             pound_bar = st.progress(st.session_state.pound_progress)
             col_pound1, col_pound2 = st.columns(2)
             with col_pound1:
-                if st.button("🔨 捶打一次"):
-                    # 修复进度条溢出问题
+                if st.button("🔨 捶打一次", use_container_width=True):
                     st.session_state.pound_progress = min(st.session_state.pound_progress + 10, 100)
                     pound_bar.progress(st.session_state.pound_progress)
             with col_pound2:
-                if st.button("⚡ 快速完成"):
+                if st.button("⚡ 快速完成", use_container_width=True):
                     st.session_state.pound_progress = 100
                     pound_bar.progress(100)
             
@@ -447,7 +450,7 @@ elif page == "🪵 艾条制作工坊":
     # 步骤3：筛选
     elif st.session_state.step == 3:
         st.subheader("第三步：筛选杂质")
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([1, 1.5])
         
         with col1:
             img = load_image("09_艾绒筛选.jpg")
@@ -477,7 +480,7 @@ elif page == "🪵 艾条制作工坊":
     # 步骤4：卷制
     elif st.session_state.step == 4:
         st.subheader("第四步：卷制艾条")
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([1, 1.5])
         
         with col1:
             img = load_image("10_手工卷艾条.jpg")
@@ -655,13 +658,13 @@ elif page == "🎐 香囊制作工坊":
         col1, col2 = st.columns([1, 1.5])
         
         with col1:
-            # 把原来的图片换成视频
-            video_path = "images/香囊填充视频.mp4"  # 你的视频文件名，放在images文件夹里
+            # 播放香囊填充视频
+            video_path = "images/香囊填充视频.mp4"
             if os.path.exists(video_path):
                 # 自动播放，循环播放，静音
                 st.video(video_path, format="video/mp4", autoplay=True, loop=True, muted=True)
             else:
-                st.info("🎬 视频加载中... 如果没有显示，请确认视频文件名是'香囊填充视频.mp4'且放在images文件夹里")
+                st.info("🎬 视频加载中... 请确认视频文件名是'香囊填充视频.mp4'且放在images文件夹里")
         
         with col2:
             st.markdown("#### 📏 选择填充量")
@@ -750,7 +753,7 @@ elif page == "🎐 香囊制作工坊":
         col1, col2 = st.columns([1, 1.5])
         
         with col1:
-            # 生成最终成品图片（和预览完全一致）
+            # 生成最终成品图片
             final_img = merge_sachet_image(st.session_state.bag_style, st.session_state.accessories)
             if final_img:
                 st.image(final_img, caption="完成啦！", use_column_width=True)
@@ -1040,7 +1043,7 @@ elif page == "🎮 中药功效连连看":
                             if len(st.session_state.game_state["matched_pairs"]) == len(herb_effect_pairs):
                                 st.session_state.game_state["game_complete"] = True
                         else:
-                            # ✅ 智能错误提示：告诉用户这个功效属于哪个草药
+                            # 智能错误提示：告诉用户这个功效属于哪个草药
                             correct_herb = next(h["herb"] for h in herb_effect_pairs if h["id"] == effect_id)
                             st.error(f"❌ 不对哦，这是{correct_herb}的功效！")
                         
@@ -1065,7 +1068,7 @@ elif page == "🎮 中药功效连连看":
                 st.session_state.shuffled_effects = random.sample(herb_effect_pairs, len(herb_effect_pairs))
                 st.rerun()
 
-# ---------------------- 页面6：艾草智慧问答智能体（内置密钥版） ----------------------
+# ---------------------- 页面6：艾草智慧问答智能体 ----------------------
 else:
     st.header("🤖 艾草智慧问答专家")
     st.success("你好！我是艾小博，专门解答所有关于艾草的问题，有什么想问我的吗？")
