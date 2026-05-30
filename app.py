@@ -187,11 +187,14 @@ def merge_sachet_image(bag_style, accessories):
     
     return base_img
 
-# ---------------------- 页面1：艾草的一生 ----------------------
+# ---------------------- 页面1：艾草的一生（完整互动版） ----------------------
 if page == "🌱 艾草的一生":
+    # 🎬 首页展示视频（只保留这个）
     st.markdown('<div class="video-container">', unsafe_allow_html=True)
     if os.path.exists("aicao_show.mp4"):
-        st.video("aicao_show.mp4", format="video/mp4", autoplay=True, loop=True, muted=True)
+        st.video("aicao_show.mp4", format="video/mp4", start_time=0, autoplay=True, loop=True, muted=True)
+    else:
+        st.info("🎬 展示视频正在加载中... 如果没有显示，请刷新页面")
     st.markdown('</div>', unsafe_allow_html=True)
     
     st.header("📅 艾草的完整生命周期")
@@ -201,13 +204,62 @@ if page == "🌱 艾草的一生":
     st.progress(stage/6)
     st.caption(f"生命周期进度：{int(stage/6*100)}%")
     
+    # 完整的生命周期数据（恢复所有互动内容）
     stages_data = {
-        1: {"name": "播种期", "time": "每年3-4月", "image": "01_艾草播种种植.jpg"},
-        2: {"name": "发芽期", "time": "播种后7-15天", "image": "02_艾草幼苗发芽.jpg"},
-        3: {"name": "生长期", "time": "5-7月", "image": "03_艾草田生长.jpg"},
-        4: {"name": "收割期", "time": "端午节前后", "image": "04_艾草收割.jpg"},
-        5: {"name": "炮制期", "time": "收割后", "image": "05_艾绒炮制.jpg"},
-        6: {"name": "应用期", "time": "全年", "image": "06_艾灸应用.jpg"}
+        1: {
+            "name": "播种期",
+            "time": "每年3-4月",
+            "ancient_saying": "清明前后，种瓜点豆，艾草亦如是。",
+            "modern_science": "艾草种子发芽的最佳温度是18-22℃，发芽率约70%。",
+            "description": "艾草多采用分株繁殖，成活率几乎100%。种子繁殖虽然慢，但能获得更健壮的植株。播种时需与细土混合撒播，覆土1厘米左右，保持土壤湿润。",
+            "fun_fact": "艾草种子非常小，1克种子就有10000多粒！",
+            "image": "01_艾草播种种植.jpg"
+        },
+        2: {
+            "name": "发芽期",
+            "time": "播种后7-15天",
+            "ancient_saying": "阳春三月，百草回芽，艾草最先破土。",
+            "modern_science": "艾草幼苗含有丰富的叶绿素，光合作用效率是普通植物的1.5倍。",
+            "description": "幼苗呈嫩绿色，初期生长缓慢，需注意除草和浇水。当幼苗长到10-15厘米高时，即可进行间苗和移栽。艾草生命力极强，即使被踩断也能重新发芽。",
+            "fun_fact": "艾草的根可以深入地下2米，所以它非常耐旱，即使几个月不下雨也能存活。",
+            "image": "02_艾草幼苗发芽.jpg"
+        },
+        3: {
+            "name": "生长期",
+            "time": "5-7月",
+            "ancient_saying": "五月艾草，长得比人高。",
+            "modern_science": "艾草在25-30℃时生长最快，每天可以长高2-3厘米。",
+            "description": "这是艾草生长最快的时期，植株高度可达1.5-2米。叶片呈羽状深裂，背面有白色绒毛，有浓郁的香气。此时需充足的阳光和水分，每月施一次有机肥。",
+            "fun_fact": "艾草会释放一种特殊的化学物质，能驱赶周围的害虫，所以农民经常把艾草种在菜园边。",
+            "image": "03_艾草田生长.jpg"
+        },
+        4: {
+            "name": "收割期",
+            "time": "端午节前后",
+            "ancient_saying": "端午采艾，悬于门户，可避邪驱瘟。",
+            "modern_science": "端午节前后，艾草的挥发油含量达到全年最高峰，药效最强。",
+            "description": "这是一年中收割艾草的最佳时节。选择晴天上午收割，割取地上部分，留下根部，秋天还能再收一茬。收割后要及时摊开阴干，不能暴晒。",
+            "fun_fact": "民间有\"早采三天是个宝，晚采三天是个草\"的说法，说的就是艾草收割的时机非常重要。",
+            "image": "04_艾草收割.jpg"
+        },
+        5: {
+            "name": "炮制期",
+            "time": "收割后",
+            "ancient_saying": "凡用艾叶，须用陈久者，治令细软，谓之熟艾。",
+            "modern_science": "新艾挥发油含量过高，燃烧猛烈，容易灼伤皮肤；陈艾挥发油适中，火力温和，渗透力强。",
+            "description": "新鲜艾草不能直接入药，需要经过炮制。先放在通风阴凉处阴干，然后反复捶打、筛选，去除杂质和茎秆，得到金黄色的艾绒。艾绒陈放3年以上药效最好。",
+            "fun_fact": "制作1公斤30:1的极品艾绒，需要30公斤干艾草，经过上万次的捶打和筛选。",
+            "image": "05_艾绒炮制.jpg"
+        },
+        6: {
+            "name": "应用期",
+            "time": "全年",
+            "ancient_saying": "艾草通十二经，走三阴，理气血，逐寒湿。",
+            "modern_science": "现代研究证实，艾草含有桉叶素、龙脑等多种活性成分，具有抗菌、抗病毒、抗炎、镇痛等作用。",
+            "description": "艾草是中医里的\"万能草\"，用途非常广泛：✅ 艾灸：温通经络，散寒止痛 ✅ 泡脚：祛湿驱寒，改善睡眠 ✅ 食疗：艾草青团、艾草鸡蛋汤 ✅ 驱蚊：燃烧艾草，天然驱蚊",
+            "fun_fact": "艾草是世界上最早被人类使用的药用植物之一，已有5000多年的历史。",
+            "image": "06_艾灸应用.jpg"
+        }
     }
     
     current_stage = stages_data[stage]
@@ -217,16 +269,35 @@ if page == "🌱 艾草的一生":
         img = load_image(current_stage["image"])
         if img:
             st.image(img, caption=f"艾草·{current_stage['name']}", use_column_width=True)
+        else:
+            st.info(f"图片未找到：{current_stage['image']}")
         
+        # 恢复彩蛋按钮
         if st.button("🥚 发现冷知识", type="secondary", use_container_width=True):
-            st.info("💡 艾草种子非常小，1克种子就有10000多粒！")
+            st.info(f"💡 {current_stage['fun_fact']}")
     
     with col2:
         st.subheader(f"第{stage}阶段：{current_stage['name']}")
         st.markdown(f"**⏰ 最佳时间：** {current_stage['time']}")
         st.divider()
         
-        if st.button("🤖 问艾小博更多", type="primary", use_container_width=True):
+        # 恢复三个标签页
+        tab1, tab2, tab3 = st.tabs(["📖 基本介绍", "👴 古人怎么说", "🔬 现代科学说"])
+        
+        with tab1:
+            st.markdown(current_stage["description"])
+        
+        with tab2:
+            st.markdown(f"> {current_stage['ancient_saying']}")
+        
+        with tab3:
+            st.markdown(current_stage["modern_science"])
+        
+        st.divider()
+        
+        # 恢复一键问AI按钮
+        if st.button("🤖 问艾小博更多关于这个阶段的问题", type="primary", use_container_width=True):
+            # 自动跳转到智能问答页面，并预设问题
             st.session_state.chat_messages = [{"role": "user", "content": f"请详细介绍一下艾草的{current_stage['name']}"}]
             st.session_state.page = "🤖 艾草智慧问答"
             st.rerun()
