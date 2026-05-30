@@ -192,7 +192,7 @@ if page == "🌱 艾草的一生":
     # 🎬 首页展示视频（只保留这个）
     st.markdown('<div class="video-container">', unsafe_allow_html=True)
     if os.path.exists("aicao_show.mp4"):
-        st.video("aicao_show.mp4", format="video/mp4", start_time=0, autoplay=True, loop=True, muted=True)
+        https://raw.githubusercontent.com/kimaicao2029/aicao/main/展示视频.mp4
     else:
         st.info("🎬 展示视频正在加载中... 如果没有显示，请刷新页面")
     st.markdown('</div>', unsafe_allow_html=True)
