@@ -31,7 +31,7 @@ body{background-color:#F5F8F5;}
     background-size:50%;
     background-repeat:no-repeat;
     background-position:center;
-    opacity:0.08;
+    opacity:0.12;
     z-index:-1;
 }
 </style>
