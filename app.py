@@ -24,10 +24,10 @@ st.markdown('''
 body{background-color:#F5F8F5;}
 .stApp{
     background-image:url("https://s2.loli.net/2024/05/20/9XZkY3xQ7VfL1wH.svg");
-    background-size:80%;
+    background-size:50%;
     background-repeat:no-repeat;
     background-position:center;
-    opacity:0.1;
+    opacity:0.03;
 }
 </style>
 ''', unsafe_allow_html=True)
