@@ -22,12 +22,17 @@ st.set_page_config(
 st.markdown('''
 <style>
 body{background-color:#F5F8F5;}
-.stApp{
+.stApp::before{
+    content:"";
+    position:fixed;
+    top:0;left:0;
+    width:100%;height:100%;
     background-image:url("https://s2.loli.net/2024/05/20/9XZkY3xQ7VfL1wH.svg");
     background-size:50%;
     background-repeat:no-repeat;
     background-position:center;
-    opacity:0.03;
+    opacity:0.08;
+    z-index:-1;
 }
 </style>
 ''', unsafe_allow_html=True)
