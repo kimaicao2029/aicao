@@ -19,7 +19,18 @@ st.set_page_config(
     page_icon="🌿",
     layout="wide"
 )
-
+st.markdown('''
+<style>
+body{background-color:#F5F8F5;}
+.stApp{
+    background-image:url("https://s2.loli.net/2024/05/20/9XZkY3xQ7VfL1wH.svg");
+    background-size:80%;
+    background-repeat:no-repeat;
+    background-position:center;
+    opacity:0.1;
+}
+</style>
+''', unsafe_allow_html=True)
 # ---------------------- 全局样式 ----------------------
 hide_default_style = """
 <style>
