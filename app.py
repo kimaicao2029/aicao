@@ -21,18 +21,32 @@ st.set_page_config(
 )
 st.markdown('''
 <style>
-body{background-color:#F5F8F5;}
+/* 全局浅艾草绿底色 */
+body{background-color:#F2F7EF;}
+/* 侧边导航栏染成淡绿，和主题呼应 */
+.css-18e3th9 {
+    background-color:#EDF5E9;
+    border-right:1px solid #D7E8CC;
+}
+/* 居中淡艾草水印，不挡内容 */
 .stApp::before{
     content:"";
     position:fixed;
     top:0;left:0;
     width:100%;height:100%;
     background-image:url("https://s2.loli.net/2024/05/20/9XZkY3xQ7VfL1wH.svg");
-    background-size:50%;
+    background-size:45%;
     background-repeat:no-repeat;
     background-position:center;
-    opacity:0.12;
+    opacity:0.1;
     z-index:-1;
+}
+/* 主内容区加白卡质感，提升层次 */
+.stApp > div:first-child > div:nth-child(2) {
+    background:#FFFFFF99;
+    border-radius:12px;
+    margin:20px;
+    padding:30px;
 }
 </style>
 ''', unsafe_allow_html=True)
