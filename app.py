@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 # ==============================================
 # 🔥 这里！把下面两个值改成你自己的！
 # ==============================================
-DEFAULT_API_KEY = "ark-xxxxxxxxxxxxxxxxxxxx"  # 你的ark-开头的API密钥
-DEFAULT_ENDPOINT_ID = "ep-20260526134725-dbn8787k"  # 你的ep-开头的接入点ID
+DEFAULT_API_KEY = "ark-9dc08183-212c-4c1a-a816-fb285f476a5f-a7d4c"  # 你的ark-开头的API密钥
+DEFAULT_ENDPOINT_ID = "ep-20260526134725-dbn87"  # 你的ep-开头的接入点ID
 DEFAULT_TEMPERATURE = 0.6
 
 # ---------------------- 全局配置 ----------------------
