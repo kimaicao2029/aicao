@@ -35,6 +35,7 @@ if "approval_list" not in st.session_state:
         {"id": 2, "type": "请假申请", "content": "6月2日请假一天", "status": "待审批", "time": "2024-06-02"},
     ]
 
+
 if "user_profile" not in st.session_state:
     st.session_state.user_profile = {
         "name": "张三",
