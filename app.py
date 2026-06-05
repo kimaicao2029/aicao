@@ -35,6 +35,12 @@ if "approval_list" not in st.session_state:
         {"id": 2, "type": "请假申请", "content": "6月2日请假一天", "status": "待审批", "time": "2024-06-02"},
     ]
 
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"id": 1, "type": "系统通知", "content": "你的实训申请已通过审批！", "read": False, "time": "2024-06-01 10:30"},
+        {"id": 2, "type": "学习提醒", "content": "你有一个未完成的学习任务：艾草的一生", "read": False, "time": "2024-06-02 09:00"},
+        {"id": 3, "type": "公告", "content": "平台已升级，新增大数据审批统计功能", "read": True, "time": "2024-05-30 15:00"},
+    ]
 
 if "user_profile" not in st.session_state:
     st.session_state.user_profile = {
@@ -306,10 +312,10 @@ def render_home():
     # 新增：顶部视频展示框！你直接把视频放这里就行
     st.markdown('<div class="video-card">', unsafe_allow_html=True)
     st.subheader("🎬 平台展示视频")
-    if os.path.exists("show.mp4"):
-        st.video("show.mp4", format="video/mp4", autoplay=True, loop=True, muted=True)
+    if os.path.exists("aicao_show.mp4"):
+        st.video("aicao_show.mp4", format="video/mp4", autoplay=True, loop=True, muted=True)
     else:
-        st.info("你可以把你的展示视频放到这里，命名为show.mp4，就会自动显示了！")
+        st.info("你可以把你的展示视频放到这里，命名为aicao_show.mp4，就会自动显示了！")
     st.markdown('</div>', unsafe_allow_html=True)
     
     # 功能卡片（2行3列）
@@ -502,76 +508,58 @@ def render_approval():
         st.session_state.current_page = "home"
         st.rerun()
 
-# ---------------------- 消息页面（终极修复版，永不泄露代码） ----------------------
+# ---------------------- 消息页面 ----------------------
 def render_message():
     st.markdown('<div class="info-card">', unsafe_allow_html=True)
     st.header("💬 消息中心")
     st.success("在这里查看所有的系统通知和学习提醒！")
-
-    # ✅ 强制重置污染数据（只执行一次，自动恢复干净的初始消息）
-    if "messages_fixed" not in st.session_state:
-        st.session_state.messages = [
-            {"id": 1, "type": "系统通知", "content": "你的实训申请已通过审批！", "read": False, "time": "2024-06-01 10:30"},
-            {"id": 2, "type": "学习提醒", "content": "你有一个未完成的学习任务：艾草的一生", "read": False, "time": "2024-06-02 09:00"},
-            {"id": 3, "type": "公告", "content": "平台已升级，新增大数据审批统计功能", "read": True, "time": "2024-05-30 15:00"},
-        ]
-        st.session_state.messages_fixed = True
-
+    
     unread_count = sum(1 for m in st.session_state.messages if not m["read"])
     if unread_count > 0:
         st.info(f"你有 {unread_count} 条未读消息")
-
+    
     # 全部标记已读
     if st.button("全部标记为已读", use_container_width=True):
-        for i in range(len(st.session_state.messages)):
-            st.session_state.messages[i]["read"] = True
+        for m in st.session_state.messages:
+            m["read"] = True
         st.success("已全部标记为已读！")
         st.rerun()
-
+    
     st.divider()
-
-    # ✅ 纯数据渲染，所有HTML都在这里生成，绝对不存到session里
-    for i in range(len(st.session_state.messages)):
-        msg = st.session_state.messages[i]
-        
-        # 消息类型颜色
-        type_colors = {
-            "系统通知": "#2E7D32",
-            "学习提醒": "#F57C00",
-            "公告": "#1565C0"
-        }
-        type_color = type_colors.get(msg["type"], "#666")
-
-        # ✅ 完整的消息卡片HTML，一次性生成，一次性闭合
+    
+    # 消息列表
+    for i, msg in enumerate(st.session_state.messages):
+        type_color = "#2E7D32" if msg["type"] == "系统通知" else "#F57C00" if msg["type"] == "学习提醒" else "#1565C0"
         st.markdown(f"""
         <div class="info-card" style="padding: 15px; margin-bottom: 10px; {'opacity: 0.7;' if msg['read'] else ''}">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <span style="background: {type_color}; color: white; padding: 4px 8px; border-radius: 8px; font-size: 12px;">{msg['type']}</span>
-                    {'' if msg['read'] else '<span style="background: #ff4757; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 8px;">未读</span>'}
+                    {'' if msg['read'] else '<span class="unread-badge">未读</span>'}
                 </div>
                 <div style="font-size: 12px; color: #999;">{msg['time']}</div>
             </div>
-            <div style="font-weight: bold; font-size: 14px;">{msg['content']}</div>
-        </div>
+            <div style="margin-top: 10px; font-weight: bold;">{msg['content']}</div>
         """, unsafe_allow_html=True)
-
-        # ✅ 按钮区域，用索引操作，绝对不使用循环变量
+        
         col1, col2 = st.columns(2)
         with col1:
-            if not st.session_state.messages[i]["read"]:
+            if not msg["read"]:
                 if st.button("标记已读", key=f"read_msg_{i}", use_container_width=True):
-                    st.session_state.messages[i]["read"] = True
+                    msg["read"] = True
                     st.rerun()
         with col2:
             if st.button("删除", key=f"del_msg_{i}", use_container_width=True):
                 del st.session_state.messages[i]
                 st.rerun()
-
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
     st.markdown('</div>', unsafe_allow_html=True)
     if st.button("← 返回首页", use_container_width=True):
         st.session_state.current_page = "home"
         st.rerun()
+
 # ---------------------- 我的页面 ----------------------
 def render_profile():
     st.markdown('<div class="info-card">', unsafe_allow_html=True)
