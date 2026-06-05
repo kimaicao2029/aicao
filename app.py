@@ -312,10 +312,10 @@ def render_home():
     # 新增：顶部视频展示框！你直接把视频放这里就行
     st.markdown('<div class="video-card">', unsafe_allow_html=True)
     st.subheader("🎬 平台展示视频")
-    if os.path.exists("aicao_show.mp4"):
-        st.video("aicao_show.mp4", format="video/mp4", autoplay=True, loop=True, muted=True)
+    if os.path.exists("show.mp4"):
+        st.video("show.mp4", format="video/mp4", autoplay=True, loop=True, muted=True)
     else:
-        st.info("你可以把你的展示视频放到这里，命名为aicao_show.mp4，就会自动显示了！")
+        st.info("你可以把你的展示视频放到这里，命名为show.mp4，就会自动显示了！")
     st.markdown('</div>', unsafe_allow_html=True)
     
     # 功能卡片（2行3列）
