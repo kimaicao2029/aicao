@@ -508,7 +508,7 @@ def render_approval():
         st.session_state.current_page = "home"
         st.rerun()
 
-# ---------------------- 消息页面 ----------------------
+# ---------------------- 消息页面（彻底修复版） ----------------------
 def render_message():
     st.markdown('<div class="info-card">', unsafe_allow_html=True)
     st.header("💬 消息中心")
@@ -527,9 +527,12 @@ def render_message():
     
     st.divider()
     
-    # 消息列表
-    for i, msg in enumerate(st.session_state.messages):
+    # 消息列表（修复循环按钮陷阱）
+    for i in range(len(st.session_state.messages)):
+        msg = st.session_state.messages[i]
         type_color = "#2E7D32" if msg["type"] == "系统通知" else "#F57C00" if msg["type"] == "学习提醒" else "#1565C0"
+        
+        # 消息卡片（完整HTML结构，一次性闭合）
         st.markdown(f"""
         <div class="info-card" style="padding: 15px; margin-bottom: 10px; {'opacity: 0.7;' if msg['read'] else ''}">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -540,26 +543,25 @@ def render_message():
                 <div style="font-size: 12px; color: #999;">{msg['time']}</div>
             </div>
             <div style="margin-top: 10px; font-weight: bold;">{msg['content']}</div>
+        </div>
         """, unsafe_allow_html=True)
         
+        # 按钮区域（用索引操作，不再使用循环变量msg）
         col1, col2 = st.columns(2)
         with col1:
-            if not msg["read"]:
+            if not st.session_state.messages[i]["read"]:
                 if st.button("标记已读", key=f"read_msg_{i}", use_container_width=True):
-                    msg["read"] = True
+                    st.session_state.messages[i]["read"] = True
                     st.rerun()
         with col2:
             if st.button("删除", key=f"del_msg_{i}", use_container_width=True):
                 del st.session_state.messages[i]
                 st.rerun()
-        
-        st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
     if st.button("← 返回首页", use_container_width=True):
         st.session_state.current_page = "home"
         st.rerun()
-
 # ---------------------- 我的页面 ----------------------
 def render_profile():
     st.markdown('<div class="info-card">', unsafe_allow_html=True)
