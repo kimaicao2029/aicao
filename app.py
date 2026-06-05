@@ -124,32 +124,14 @@ header {visibility: hidden;}
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* 底部导航栏 */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    padding: 10px 0;
-    display: flex;
-    justify-content: space-around;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-    z-index: 999;
-}
-.nav-item {
-    text-align: center;
-    color: #999;
-    font-size: 12px;
-    cursor: pointer;
-}
-.nav-item.active {
-    color: #2E7D32;
-}
-.nav-item svg {
-    width: 24px;
-    height: 24px;
-    margin-bottom: 4px;
+/* 未读消息标记 */
+.unread-badge {
+    background: #ff4757;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    float: right;
 }
 
 /* 顶部横幅 */
@@ -208,16 +190,6 @@ header {visibility: hidden;}
     margin: 8px 0;
     max-width: 75%;
     box-shadow: 0 2px 8px(0, 0, 0, 0.08);
-}
-
-/* 未读消息标记 */
-.unread-badge {
-    background: #ff4757;
-    color: white;
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 10px;
-    float: right;
 }
 </style>
 """
@@ -431,7 +403,7 @@ def render_schedule():
     
     # 添加新日程
     st.subheader("➕ 添加新日程")
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3 = st.columns([2, 2, 5])
     with col1:
         new_date = st.date_input("日期", value=datetime.now())
     with col2:
@@ -455,19 +427,18 @@ def render_schedule():
     # 日程列表
     st.subheader("📋 我的日程列表")
     for i, schedule in enumerate(st.session_state.user_schedule):
-        col1, col2, col3 = st.columns([2, 2, 5, 1])
-        st.markdown(f"""
-        <div class="info-card" style="padding: 15px; margin-bottom: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <span style="background: #E8F5E9; color: #2E7D32; padding: 4px 8px; border-radius: 8px; font-size: 12px;">{schedule['date']} {schedule['time']}</span>
-                    <span style="margin-left: 10px;">{schedule['content']}</span>
-                </div>
-        """, unsafe_allow_html=True)
-        if st.button("删除", key=f"del_schedule_{i}", use_container_width=True):
-            del st.session_state.user_schedule[i]
-            st.rerun()
-        st.markdown('</div></div>', unsafe_allow_html=True)
+        col_content, col_delete = st.columns([8, 2])
+        with col_content:
+            st.markdown(f"""
+            <div style="padding: 15px; margin-bottom: 10px; background: #f8f9fa; border-radius: 12px;">
+                <span style="background: #E8F5E9; color: #2E7D32; padding: 4px 8px; border-radius: 8px; font-size: 12px;">{schedule['date']} {schedule['time']}</span>
+                <span style="margin-left: 10px; font-weight: bold;">{schedule['content']}</span>
+            </div>
+            """, unsafe_allow_html=True)
+        with col_delete:
+            if st.button("删除", key=f"del_schedule_{i}", use_container_width=True):
+                del st.session_state.user_schedule[i]
+                st.rerun()
     
     st.markdown('</div>', unsafe_allow_html=True)
     if st.button("← 返回首页", use_container_width=True):
@@ -641,7 +612,7 @@ def render_profile():
         st.session_state.current_page = "home"
         st.rerun()
 
-# ---------------------- 其他功能页面（和原来一样） ----------------------
+# ---------------------- 其他功能页面 ----------------------
 def render_life():
     st.markdown('<div class="info-card">', unsafe_allow_html=True)
     st.header("📅 艾草的完整生命周期")
@@ -1328,23 +1299,25 @@ def render_ai():
         st.session_state.current_page = "home"
         st.rerun()
 
-# ---------------------- 底部导航栏（删掉了课程，剩下三个） ----------------------
-st.markdown("""
-<div class="bottom-nav">
-    <div class="nav-item active">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-        <div>首页</div>
-    </div>
-    <div class="nav-item">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-        <div>消息</div>
-    </div>
-    <div class="nav-item">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-        <div>我的</div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+# ---------------------- 底部导航栏 ----------------------
+unread_count = sum(1 for m in st.session_state.messages if not m["read"])
+col_nav1, col_nav2, col_nav3 = st.columns(3)
+
+with col_nav1:
+    if st.button("🏠\n首页", use_container_width=True, type="primary" if st.session_state.current_page == "home" else "secondary"):
+        st.session_state.current_page = "home"
+        st.rerun()
+
+with col_nav2:
+    btn_text = f"💬\n消息{' ('+str(unread_count)+')' if unread_count>0 else ''}"
+    if st.button(btn_text, use_container_width=True, type="primary" if st.session_state.current_page == "message" else "secondary"):
+        st.session_state.current_page = "message"
+        st.rerun()
+
+with col_nav3:
+    if st.button("👤\n我的", use_container_width=True, type="primary" if st.session_state.current_page == "profile" else "secondary"):
+        st.session_state.current_page = "profile"
+        st.rerun()
 
 # ---------------------- 渲染当前页面 ----------------------
 if st.session_state.current_page == "home":
